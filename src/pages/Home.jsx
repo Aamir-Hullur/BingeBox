@@ -1,19 +1,48 @@
 import MovieCard from "../components/MovieCard"
-import { useState } from "react"
-
-function Hone() {
+import { useState, useEffect } from "react"
+import "../css/Home.css"
+import { searchMovies, getPopularMovies } from "../services/api";
+//debounce query
+function Home() {
     const [searchQuery, setSearchQuery] = useState("")
+    const [movies, setMovies] = useState([]);
+    const [error, setError] = useState(null)
+    const [loading, setLoading] = useState(true)
 
-    const movies = [
-        { id: 1, title: "The Shawshank Redemption", year: 1994 },
-        { id: 2, title: "The Godfather", year: 1972 },
-        { id: 3, title: "The Godfather: Part II", year: 1974 },
-        { id: 4, title: "Dark Knight", year: 2008 },
-        { id: 5, title: "Matrix", year: 1999 },
-    ]
-    function handleSearch(e) {
-        e.preventDefault()
-        alert(searchQuery)
+    useEffect(() => {
+        const loadPopularMovies = async () => {
+            try {
+                const popularMovies = await getPopularMovies()
+                setMovies(popularMovies)
+            } catch (err) {
+                console.log(err)
+                setError("Failed to load movies...")
+            }
+            finally {
+                setLoading(false)
+            }
+        }
+
+        loadPopularMovies()
+    }, [])
+
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return
+        if (loading) return
+        setLoading(true)
+
+        try {
+            const searchResults = await searchMovies(searchQuery)
+            setMovies(searchResults)
+            setError(null)
+        } catch (err) {
+            console.log(err)
+            setError("Failed to search movies...")
+        } finally {
+            setLoading(false)
+        }
+
     };
 
     return <div className="home">
@@ -27,15 +56,18 @@ function Hone() {
             <button type="submit" className="search-button">Search</button>
         </form>
 
+        {error && <div className="error-message">{error}</div>}
 
-        <div className="movies-grid">
-            {movies.map(
-                (movie) =>
-                    movie.title.toLowerCase().includes(searchQuery.toLowerCase()) && (
+        {loading ? <div className="loading">Loading...</div> :
+            <div className="movies-grid">
+                {movies.map(
+                    (movie) =>
+                    (
                         <MovieCard movie={movie} key={movie.id} />
                     ))}
-        </div>
+            </div>}
+
     </div>
 }
 
-export default Hone
+export default Home;
