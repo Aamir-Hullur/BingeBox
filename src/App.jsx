@@ -1,20 +1,23 @@
 import './App.css'
+import Favourites from './pages/Favourites';
+import Home from "./pages/Home";
+import { Routes, Route } from "react-router-dom"
+import NavBar from './components/NavBar';
 
 function App() {
   return (
-    <>
-      <Text string="Hello, World!" />
-      <Text string="This is a React app." />
-    </>
-  )
-}
-
-function Text({string}) {
-  return (
     <div>
-      <p>{string}</p>
+      <NavBar/>
+    <main className='main-content'>
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/favourites' element={<Favourites />} />
+      </Routes>
+    </main>
     </div>
-  )
+  );
 }
 
-export default App
+
+export default App;
+ 
